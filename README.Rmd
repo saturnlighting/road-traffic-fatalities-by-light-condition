@@ -1,0 +1,453 @@
+---
+output: github_document
+title: 'Road traffic fatalities by light condition: a comparative analysis between the US and the UK'
+always_allow_html: true
+---
+
+
+```{r include=FALSE}
+knitr::opts_chunk$set(cache = TRUE, cache.lazy = FALSE) 
+library(tidyverse)
+library(ggpubr)
+library(piggyback)
+library(kableExtra)
+```
+
+```{r include=FALSE}
+remotes::install_github("elipousson/crashapi")
+```
+
+```{r include=FALSE, eval=FALSE}
+crashes = crashapi::get_fars(year = 2020, state = "MD", county = "Anne Arundel County", details = TRUE)
+# dir.create("example-data")
+# dir.create("example-data/fars")
+crashes %>% 
+  slice(1:10) %>% 
+  write_csv(file = "data/example-data/fars/fars_example_md_top_10.csv")
+crashes %>% 
+  write_csv("data/crashes_fars_2020_md_anne_arundel_county.csv")
+piggyback::pb_release_create(tag = "1")
+piggyback::pb_upload("data/crashes_fars_2020_md_anne_arundel_county.csv", tag = "1")
+```
+
+```{r eval=FALSE, include=FALSE}
+# Get travel survey data
+nhts17_tripub <- read.csv("data/NHTS/trippub.csv")
+names(nhts17_tripub)
+table(nhts17_tripub$STRTTIME)
+table(nhts17_tripub$ENDTIME)
+table(nhts17_tripub$TDAYDATE)
+table(nhts17_tripub$TRPMILES)
+table(nhts17_tripub$TRVLCMIN)
+table(nhts17_tripub$TRPTRANS) # 01 walk, 02 bicycle, 03 Car, 04 SUV
+
+# Mutate daylight/dark variable 
+# https://www.rdocumentation.org/packages/StreamMetabolism/versions/1.1.2/topics/sunrise.set
+# https://www.r-bloggers.com/2014/09/seeing-the-daylight-with-r/
+
+# Estimate vkm by daylight/dark
+```
+
+# US 2011-2020 (FARS data)
+
+```{r eval=FALSE, include=FALSE}
+# get data from https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars
+
+# crashapi package should work now with the following code
+# data20_pkg <- crashapi::get_fars_zip(year = 2020, format = "csv")
+# acc20_pkg <- data20_pkg[["accident"]]
+
+acc20 <- read.csv("data/FARS/FARS2020NationalCSV/accident.CSV")
+acc19 <- read.csv("data/FARS/FARS2019NationalCSV/accident.CSV")
+acc18 <- read.csv("data/FARS/FARS2018NationalCSV/accident.csv")
+acc17 <- read.csv("data/FARS/FARS2017NationalCSV/accident.CSV")
+acc16 <- read.csv("data/FARS/FARS2016NationalCSV/accident.CSV")
+acc15 <- read.csv("data/FARS/FARS2015NationalCSV/accident.csv")
+acc14 <- read.csv("data/FARS/FARS2014NationalCSV/ACCIDENT.csv")
+acc13 <- read.csv("data/FARS/FARS2013NationalCSV/ACCIDENT.csv")
+acc12 <- read.csv("data/FARS/FARS2012NationalCSV/ACCIDENT.csv")
+acc11 <- read.csv("data/FARS/FARS2011NationalCSV/ACCIDENT.CSV")
+
+acc11_14 <- rbind(acc11, acc12, acc13, acc14)
+acc11_15 <- merge(acc11_14, acc15, all=TRUE)
+acc16_19 <- rbind(acc16, acc17, acc18, acc19)
+acc11_19 <- merge(acc11_15, acc16_19, all=TRUE)
+acc11_20 <- merge(acc20, acc11_19, all=TRUE)
+
+acc16_19 <- rbind(acc16, acc17, acc18, acc19)
+acc16_20 <- merge(acc20, acc16_19, all=TRUE)
+
+accAux20 <- read.csv("data/FARS/FARS2020NationalAuxiliaryCSV/ACC_AUX.CSV")
+perAux20 <- read.csv("data/FARS/FARS2020NationalAuxiliaryCSV/PER_AUX.CSV")
+peracc20 <- left_join(perAux20, accAux20)
+
+accAux19 <- read.csv("data/FARS/FARS2019NationalAuxiliaryCSV/ACC_AUX.CSV")
+perAux19 <- read.csv("data/FARS/FARS2019NationalAuxiliaryCSV/PER_AUX.CSV")
+peracc19 <- left_join(perAux19, accAux19)
+
+accAux18 <- read.csv("data/FARS/FARS2018NationalAuxiliaryCSV/ACC_AUX.CSV")
+perAux18 <- read.csv("data/FARS/FARS2018NationalAuxiliaryCSV/PER_AUX.CSV")
+peracc18 <- left_join(perAux18, accAux18)
+
+accAux17 <- read.csv("data/FARS/FARS2017NationalAuxiliaryCSV/ACC_AUX.CSV")
+perAux17 <- read.csv("data/FARS/FARS2017NationalAuxiliaryCSV/PER_AUX.CSV")
+peracc17 <- left_join(perAux17, accAux17)
+
+accAux16 <- read.csv("data/FARS/FARS2016NationalAuxiliaryCSV/ACC_AUX.CSV")
+perAux16 <- read.csv("data/FARS/FARS2016NationalAuxiliaryCSV/PER_AUX.CSV")
+peracc16 <- left_join(perAux16, accAux16)
+
+accAux15 <- read.csv("data/FARS/FARS2015NationalAuxiliaryCSV/ACC_AUX.CSV")
+perAux15 <- read.csv("data/FARS/FARS2015NationalAuxiliaryCSV/PER_AUX.CSV")
+peracc15 <- left_join(perAux15, accAux15)
+
+accAux14 <- read.csv("data/FARS/FARS2014NationalAuxiliaryCSV/ACC_AUX.CSV")
+perAux14 <- read.csv("data/FARS/FARS2014NationalAuxiliaryCSV/PER_AUX.CSV")
+peracc14 <- left_join(perAux14, accAux14)
+
+accAux13 <- read.csv("data/FARS/FARS2013NationalAuxiliaryCSV/ACC_AUX.CSV")
+perAux13 <- read.csv("data/FARS/FARS2013NationalAuxiliaryCSV/PER_AUX.CSV")
+peracc13 <- left_join(perAux13, accAux13)
+
+accAux12 <- read.csv("data/FARS/FARS2012NationalAuxiliaryCSV/ACC_AUX.CSV")
+perAux12 <- read.csv("data/FARS/FARS2012NationalAuxiliaryCSV/PER_AUX.CSV")
+peracc12 <- left_join(perAux12, accAux12)
+
+accAux11 <- read.csv("data/FARS/FARS2011NationalAuxiliaryCSV/ACC_AUX.CSV")
+perAux11 <- read.csv("data/FARS/FARS2011NationalAuxiliaryCSV/PER_AUX.CSV")
+peracc11 <- left_join(perAux11, accAux11)
+
+# accAux16_20 <- rbind(accAux16, accAux17, accAux18, accAux19, accAux20)
+# peracc16_20 <- rbind(peracc16, peracc17, peracc18, peracc19, peracc20)
+
+accAux11_20 <- rbind(accAux11, accAux12, accAux13, accAux14, accAux15, accAux16, accAux17, accAux18, accAux19, accAux20)
+peracc11_20 <- rbind(peracc11, peracc12, peracc13, peracc14, peracc15, peracc16, peracc17, peracc18, peracc19, peracc20)
+
+# acc16_20_short <- acc16_20 %>% 
+#   select("LGT_COND", "LGT_CONDNAME", "STATE", "ST_CASE", "COUNTY", "YEAR")
+
+acc11_20_short <- acc11_20 %>% 
+  select("LGT_COND", "LGT_CONDNAME", "STATE", "ST_CASE", "COUNTY", "YEAR")
+
+# peracc16_20_lc <- left_join(peracc16_20, acc16_20_short)
+
+peracc11_20_lc <- left_join(peracc11_20, acc11_20_short)
+
+# peracc16_20_lc %>%
+#   write_csv("data/FARS/NHTSA_peracc16_20.csv")
+
+peracc11_20_lc %>%
+  write_csv("data/FARS/NHTSA_peracc11_20.csv")
+
+# piggyback::pb_release_create(tag = "1")
+# piggyback::pb_upload("NHTSA_data/NHTSA_pbperacc16_20.csv", tag = "1")
+```
+
+Table 1. US road traffic fatalities by light condition and type 2011-2020
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+fars = read_csv("data/FARS/NHTSA_peracc11_20.csv")
+# Sanity check - compare data with US general results - All good!
+# fars %>% 
+#   filter(PBPTYPE == 5 & A_PERINJ == 1) %>% 
+#   group_by(YEAR) %>% 
+#   summarise(n=n())
+```
+
+```{r tab1, echo=FALSE, message=FALSE, warning=FALSE}
+data_table <- fars %>% 
+  select(A_PTYPE, YEAR, LGT_COND, A_PERINJ, `Light condition in detail` = LGT_CONDNAME) %>% 
+  mutate(`Light condition in detail` = factor(`Light condition in detail`, levels = c("Daylight", "Dark - Lighted", "Dark - Not Lighted", "Dark - Unknown Lighting", "Dawn", "Dusk"))) %>% 
+  mutate(Type = ifelse(A_PTYPE == 3, "Pedestrians", ifelse(A_PTYPE == 4, "Cyclists", "Others"))) %>%
+  mutate(Type = factor(Type, levels = c("Pedestrians", "Cyclists", "Others"))) %>%
+  filter(A_PERINJ == 1 & `Light condition in detail` != "Unkown") %>%
+    group_by(Type, `Light condition in detail`) %>% 
+  summarise(`Num.` = n()) %>% 
+  mutate(`%` = round(`Num.`/sum(`Num.`)*100, 2)) %>%
+  mutate(`Light condition` = ifelse(`Light condition in detail` == "Daylight", "Daylight", "Dark")) %>% 
+  select(Type, `Light condition`, `Light condition in detail`, `Num.`, `%`)
+
+kable(data_table)%>%
+  kable_paper("striped", full_width = F) %>%
+  pack_rows("", 1, 6) %>%
+  pack_rows("", 7, 12) %>%
+  pack_rows("", 13, 18)
+```
+
+```{r fig1, echo=FALSE, message=FALSE, warning=FALSE}
+pal <- c("#EBCC2A", "#78B7C5")
+
+data_plots = fars %>% 
+  select(A_PTYPE, YEAR, A_PERINJ) %>% 
+  mutate(Type = ifelse(A_PTYPE == 3, "Pedestrians", ifelse(A_PTYPE == 4, "Cyclists", "Others"))) %>%
+  filter(A_PERINJ == 1) %>%
+  group_by(YEAR, Type) %>% 
+  summarise(n = n()) %>% 
+  mutate(perc = n/sum(n)*100) 
+  
+data_plots$YEAR = as.factor(data_plots$YEAR)
+
+p1_us = data_plots %>% 
+  filter(Type == "Pedestrians") %>% 
+  ggplot(aes(x = YEAR, y = n, group = 1)) +
+  geom_line() + 
+  geom_point() +
+  labs(title = "Pedestrians",
+       x = "", 
+       y = "Num. of fatalities") +
+  theme_minimal() 
+
+p2_us = data_plots %>% 
+  filter(Type == "Cyclists") %>% 
+  ggplot(aes(x = YEAR, y = n, group = 1)) +
+  geom_line() + 
+  geom_point() +
+  labs(title = "Cyclists",
+       x = "", 
+       y = "Num. of fatalities") +
+  theme_minimal() 
+
+p3_us = data_plots %>%
+  filter(Type == "Others") %>%
+  ggplot(aes(x = YEAR, y = n, group = 1)) +
+  geom_line() + 
+  geom_point() +
+  labs(title = "Others",
+       x = "", 
+       y = "Num. of fatalities") +
+  theme_minimal() 
+
+ggarrange(p1_us, p2_us, p3_us,
+          common.legend = TRUE, legend = "right",
+          ncol = 1, nrow = 3)
+```
+
+Figure 1. US number of road traffic fatalities by year and type
+
+```{r fig2, echo=FALSE, message=FALSE, warning=FALSE}
+data_plots = fars %>% 
+  select(A_PTYPE, YEAR, LGT_COND, A_PERINJ) %>% 
+  mutate(`Light condition` = ifelse(LGT_COND == 1, "Daylight", ifelse(LGT_COND >= 1 & LGT_COND <= 6, "Dark", "Unkown"))) %>% 
+  mutate(`Light condition` = factor(`Light condition`, levels = c("Daylight", "Dark", "Unkown"), labels = c("Daylight", "Dark", "Unkown"))) %>% 
+  mutate(Type = ifelse(A_PTYPE == 3, "Pedestrians", ifelse(A_PTYPE == 4, "Cyclists", "Others"))) %>%
+  filter(A_PERINJ == 1, `Light condition` != "Unkown") %>%
+  group_by(YEAR, Type, `Light condition`) %>% 
+  summarise(n = n()) %>% 
+  mutate(perc = n/sum(n)*100)
+
+data_plots$YEAR = as.factor(data_plots$YEAR)
+
+p4_us = data_plots %>% 
+  filter(Type == "Pedestrians") %>% 
+  ggplot() +
+  geom_col(aes(YEAR, y = perc, fill = `Light condition`, colour = `Light condition`), position = "dodge", alpha = 0.7) + 
+  labs(title = "Pedestrians",
+       x = "", 
+       y = "% of fatalities", 
+       color = "Light condition") +
+  scale_fill_manual(values = pal) +
+  scale_colour_manual(values = pal) +
+  theme_minimal()
+
+p5_us = data_plots %>% 
+  filter(Type == "Cyclists") %>% 
+  ggplot() +
+  geom_col(aes(YEAR, y = perc, fill = `Light condition`, colour = `Light condition`), position = "dodge", alpha = 0.7) + 
+  labs(title = "Cyclists",
+       x = "", 
+       y = "% of fatalities") +
+  scale_fill_manual(values = pal) +
+  scale_colour_manual(values = pal) +
+  theme_minimal()
+
+p6_us = data_plots %>%
+  filter(Type == "Others") %>%
+  ggplot() +
+  geom_col(aes(YEAR, y = perc, fill = `Light condition`, colour = `Light condition`), position = "dodge", alpha = 0.7) + 
+  labs(title = "Others",
+       x = "", 
+       y = "% of fatalities") +
+  scale_fill_manual(values = pal) +
+  scale_colour_manual(values = pal) +
+  theme_minimal()
+
+ggarrange(p4_us, p5_us, p6_us,
+          common.legend = TRUE, legend = "right",
+          ncol = 1, nrow = 3)
+```
+
+Figure 2. US % of road traffic fatalities by light condition, year, and type 
+
+# UK 2016-2020 (STATS19 data)
+
+```{r eval=FALSE, include=FALSE}
+library(stats19)
+# merge
+accidents1979_2021_raw = read_csv("data/STATS19/dft-road-casualty-statistics-accident-1979-2021.csv")
+vehicles1979_2021_raw = read_csv("data/STATS19/dft-road-casualty-statistics-vehicle-1979-2021.csv")
+casualties1979_2021_raw = read_csv("data/STATS19/dft-road-casualty-statistics-casualty-1979-2021.csv")
+
+accidents1979_2021 = format_accidents(accidents1979_2021_raw)
+vehicles1979_2021 = format_vehicles(vehicles1979_2021_raw)
+casualties1979_2021 = format_casualties(casualties1979_2021_raw)
+
+# merge
+va79_21 <- left_join(vehicles1979_2021, accidents1979_2021)
+cva79_21 <- left_join(va79_21, casualties1979_2021)
+
+# save
+cva79_21 %>% 
+  select(casualty_type, accident_year, casualty_severity, light_conditions) %>% 
+  filter(accident_year > 2010 & accident_year < 2021) %>% 
+  write_csv("data/STATS19/cva11_20.csv")
+```
+
+Table 2. UK road traffic fatalities by light condition and type 2016-2020
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+cva11_20 = read_csv("data/STATS19/cva11_20.csv")
+```
+
+```{r tab2, echo=FALSE, message=FALSE, warning=FALSE}
+data_table <- cva11_20%>% 
+  select(casualty_type, YEAR = accident_year, casualty_severity, `Light condition in detail` = light_conditions) %>% 
+  mutate(`Light condition in detail` = factor(`Light condition in detail`, levels = c("Daylight", "Darkness - lights lit", "Darkness - lights unlit", "Darkness - no lighting", "Darkness - lighting unknown", "Data missing or out of range"))) %>%
+  mutate(Type = ifelse(casualty_type == "Pedestrian", "Pedestrians", ifelse(casualty_type == "Cyclist", "Cyclists", ifelse(casualty_type == "Horse rider", "Others", "Motorised vehicles occupants")))) %>%
+  mutate(Type = factor(Type, levels = c("Pedestrians", "Cyclists", "Motorised vehicles occupants", "Others"))) %>% # Criteria on Motorised vehicles occupants category is not the same in the UK and US. Explain in method
+  filter(casualty_severity == "Fatal" & Type != "Others" & `Light condition in detail` != "Data missing or out of range") %>%
+    group_by(Type, `Light condition in detail`) %>% 
+  summarise(`Num.` = n()) %>% 
+  mutate(`%` = round(`Num.`/(sum(`Num.`))*100,2))  %>%
+  mutate(`Light condition` = ifelse(`Light condition in detail` == "Daylight", "Daylight", "Dark")) %>% 
+  select(Type, `Light condition`, `Light condition in detail`, `Num.`, `%`)
+
+kable(data_table) %>%
+  kable_paper("striped", full_width = F) %>%
+  pack_rows("", 1, 5) %>%
+  pack_rows("", 6, 10) %>%
+  pack_rows("", 11, 15)
+```
+
+```{r fig3, echo=FALSE, message=FALSE, warning=FALSE}
+data_plots <- cva11_20%>% 
+  select(casualty_type, YEAR = accident_year, casualty_severity) %>% 
+  mutate(Type = ifelse(casualty_type == "Pedestrian", "Pedestrians", ifelse(casualty_type == "Cyclist", "Cyclists", ifelse(casualty_type == "Horse rider", "Others", "Motorised vehicles occupants")))) %>%
+  mutate(Type = factor(Type, levels = c("Pedestrians", "Cyclists", "Motorised vehicles occupants"))) %>%
+  filter(casualty_severity == "Fatal" & Type != "Others") %>%
+  group_by(YEAR, Type) %>% 
+  summarise(n = n())
+
+data_plots$YEAR = as.factor(data_plots$YEAR)
+
+p1_uk = data_plots %>% 
+  filter(Type == "Pedestrians") %>% 
+  ggplot(aes(x= YEAR, y = n, group = 1)) +
+  geom_line() + 
+  geom_point() +
+  labs(title="Pedestrians",
+       x ="", 
+       y = "Num. of fatalities") +
+  theme_minimal()  
+
+p2_uk = data_plots %>% 
+  filter(Type == "Cyclists") %>% 
+  ggplot(aes(x= YEAR, y = n, group = 1)) +
+  geom_line() + 
+  geom_point() +
+  labs(title="Cyclists",
+       x ="", 
+       y = "Num. of fatalities") +
+  theme_minimal()
+
+p3_uk = data_plots %>%
+  filter(Type == "Motorised vehicles occupants") %>%
+  ggplot(aes(x= YEAR, y = n, group = 1)) +
+  geom_line() + 
+  geom_point() +
+  labs(title="Others",
+       x ="", 
+       y = "Num. of fatalities") +
+  theme_minimal()
+
+ggarrange(p1_uk, p2_uk, p3_uk,
+          common.legend = TRUE, legend = "right",
+          ncol = 1, nrow = 3)
+```
+
+Figure 3. UK number of road traffic fatalities by year and type
+
+```{r fig4, echo=FALSE, message=FALSE, warning=FALSE}
+data_plots <- cva11_20%>% 
+  select(casualty_type, YEAR = accident_year, casualty_severity, `Light condition in detail` = light_conditions) %>% 
+  mutate(`Light condition` = ifelse(`Light condition in detail` == "Darkness - lights lit" | `Light condition in detail` == "Darkness - lights unlit" | `Light condition in detail` == "Darkness - no lighting" | `Light condition in detail` == "Darkness - lighting unknown", "Dark", ifelse(`Light condition in detail` == "Data missing or out of range", "NA", "Daylight"))) %>%
+ mutate(`Light condition` = factor(`Light condition`, levels = c("Daylight", "Dark"), labels = c("Daylight", "Dark"))) %>% 
+  mutate(Type = ifelse(casualty_type == "Pedestrian", "Pedestrians", ifelse(casualty_type == "Cyclist", "Cyclists", ifelse(casualty_type == "Horse rider", "Others", "Motorised vehicles occupants")))) %>%
+  mutate(Type = factor(Type, levels = c("Pedestrians", "Cyclists", "Motorised vehicles occupants"))) %>%
+  filter(casualty_severity == "Fatal" & Type != "Others" & `Light condition in detail` != "Data missing or out of range") %>%
+  group_by(YEAR, Type, `Light condition`) %>% 
+  summarise(n = n()) %>% 
+  mutate(perc = round(n/(sum(n))*100,2))
+
+data_plots$YEAR = as.factor(data_plots$YEAR)
+
+p4_uk = data_plots %>% 
+  filter(Type == "Pedestrians") %>% 
+  ggplot() +
+  geom_col(aes(YEAR, y = perc, fill = `Light condition`, colour = `Light condition`), position = "dodge", alpha = 0.7) + 
+  labs(title="Pedestrians",
+       x ="", 
+       y = "% of fatalities", 
+       color = "Light condition") +
+  scale_fill_manual(values = pal) +
+  scale_colour_manual(values = pal) +
+  theme_minimal()
+
+p5_uk = data_plots %>% 
+  filter(Type == "Cyclists") %>% 
+  ggplot() +
+  geom_col(aes(YEAR, y = perc, fill = `Light condition`, colour = `Light condition`), position = "dodge", alpha = 0.7) + 
+  labs(title="Cyclists",
+       x ="", 
+       y = "% of fatalities") +
+  scale_fill_manual(values = pal) +
+  scale_colour_manual(values = pal) +
+  theme_minimal()
+
+p6_uk = data_plots %>%
+  filter(Type == "Motorised vehicles occupants") %>%
+  ggplot() +
+  geom_col(aes(YEAR, y = perc, fill = `Light condition`, colour = `Light condition`), position = "dodge", alpha = 0.7) + 
+  labs(title="Others",
+       x ="", 
+       y = "% of fatalities") +
+  scale_fill_manual(values = pal) +
+  scale_colour_manual(values = pal) +
+  theme_minimal()
+
+ggarrange(p4_uk, p5_uk, p6_uk,
+          common.legend = TRUE, legend = "right",
+          ncol = 1, nrow = 3)
+```
+
+
+Figure 4. UK % of road traffic fatalities by light condition, year, and type
+
+# Next steps
+
+- Add a total row per type of fatality in each table.
+
+- Estimate risk indices. Get denominator (distance, time, etc) through the NHTS and NTS. Tricky step as we need to calculate veh-km by light condition (daylight/dark). I suppose we need to create function to make this calculation. Problems here: not all trips will be A or B, different hour times in the US, etc. 
+
+- Compare cities?
+
+- Check association of risk indices with the sale of SUVs, community severance (pedestrian crossings length and density), alcohol consumption, gender, ethnicity, income, etc. Safety in numbers is also interesting: less walking may mean higher risk.
+
+# References
+
+Some interesting non-academic sources:
+
+- https://www.theguardian.com/world/2022/nov/22/he-was-fast-he-ran-you-right-over-what-its-like-to-get-hit-by-an-suv?CMP=Share_AndroidApp_Other
+
+- https://www.vox.com/23178764/florida-us19-deadliest-pedestrian-fatality-crisis
+
+- https://www.youtube.com/watch?v=0-nthHT-J1k&ab_channel=Vox
