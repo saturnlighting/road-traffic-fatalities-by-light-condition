@@ -278,7 +278,7 @@ ggarrange(p4_us, p5_us, p6_us,
 
 Figure 2. US % of road traffic fatalities by light condition, year, and type 
 
-# UK 2016-2020 (STATS19 data)
+# UK 2011-2020 (STATS19 data)
 
 ```{r eval=FALSE, include=FALSE}
 library(stats19)
@@ -302,7 +302,7 @@ cva79_21 %>%
   write_csv("data/STATS19/cva11_20.csv")
 ```
 
-Table 2. UK road traffic fatalities by light condition and type 2016-2020
+Table 2. UK road traffic fatalities by light condition and type 2011-2020
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 cva11_20 = read_csv("data/STATS19/cva11_20.csv")
