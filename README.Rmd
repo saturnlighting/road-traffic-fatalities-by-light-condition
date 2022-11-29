@@ -143,7 +143,7 @@ peracc11_20_lc %>%
 # piggyback::pb_upload("NHTSA_data/NHTSA_pbperacc16_20.csv", tag = "1")
 ```
 
-Table 1. Road traffic fatalities by type and light condition, US 2011-2020
+Table 1. Road traffic fatalities by light condition and type, US 2011-2020
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 fars = read_csv("data/FARS/NHTSA_peracc11_20.csv")
@@ -222,7 +222,7 @@ ggarrange(p1_us, p2_us, p3_us,
           ncol = 1, nrow = 3)
 ```
 
-Figure 1. Road traffic fatalities by type and year, US 2011-2020
+Figure 1. Road traffic fatalities by year and type, US 2011-2020
 
 ```{r fig2, echo=FALSE, message=FALSE, warning=FALSE}
 data_plots = fars %>% 
@@ -276,7 +276,7 @@ ggarrange(p4_us, p5_us, p6_us,
           ncol = 1, nrow = 3)
 ```
 
-Figure 2. % of road traffic fatalities by type, year, and light condition, US 2011-2020 
+Figure 2. % of road traffic fatalities by light condition, year, and type, US 2011-2020 
 
 # UK 2011-2020 (STATS19 data)
 
@@ -302,7 +302,7 @@ cva79_21 %>%
   write_csv("data/STATS19/cva11_20.csv")
 ```
 
-Table 2. Road traffic fatalities by type and light condition, UK 2011-2020
+Table 2. Road traffic fatalities by light condition and type, UK 2011-2020
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 cva11_20 = read_csv("data/STATS19/cva11_20.csv")
@@ -374,7 +374,7 @@ ggarrange(p1_uk, p2_uk, p3_uk,
           ncol = 1, nrow = 3)
 ```
 
-Figure 3. Road traffic fatalities by type and year, UK 2011-2020
+Figure 3. Road traffic fatalities by year and type, UK 2011-2020
 
 ```{r fig4, echo=FALSE, message=FALSE, warning=FALSE}
 data_plots <- cva11_20%>% 
@@ -430,7 +430,7 @@ ggarrange(p4_uk, p5_uk, p6_uk,
 ```
 
 
-Figure 4. UK % of road traffic fatalities by type, year, and light condition, UK 2011-2020
+Figure 4. UK % of road traffic fatalities by light condition, year, and type, UK 2011-2020
 
 # Next steps
 

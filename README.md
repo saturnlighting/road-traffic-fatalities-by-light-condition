@@ -4,7 +4,7 @@ between the US and the UK
 
 # US 2011-2020 (FARS data)
 
-Table 1. Road traffic fatalities by type and light condition, US
+Table 1. Road traffic fatalities by light condition and type, US
 2011-2020
 
 <table class=" lightable-paper lightable-striped" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
@@ -354,16 +354,16 @@ Dusk
 
 ![](README_files/figure-gfm/fig1-1.png)<!-- -->
 
-Figure 1. Road traffic fatalities by type and year, US 2011-2020
+Figure 1. Road traffic fatalities by year and type, US 2011-2020
 
 ![](README_files/figure-gfm/fig2-1.png)<!-- -->
 
-Figure 2. % of road traffic fatalities by type, year, and light
-condition, US 2011-2020
+Figure 2. % of road traffic fatalities by light condition, year, and
+type, US 2011-2020
 
 # UK 2011-2020 (STATS19 data)
 
-Table 2. Road traffic fatalities by type and light condition, UK
+Table 2. Road traffic fatalities by light condition and type, UK
 2011-2020
 
 <table class=" lightable-paper lightable-striped" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
@@ -662,12 +662,12 @@ Darkness - lighting unknown
 
 ![](README_files/figure-gfm/fig3-1.png)<!-- -->
 
-Figure 3. Road traffic fatalities by type and year, UK 2011-2020
+Figure 3. Road traffic fatalities by year and type, UK 2011-2020
 
 ![](README_files/figure-gfm/fig4-1.png)<!-- -->
 
-Figure 4. UK % of road traffic fatalities by type, year, and light
-condition, UK 2011-2020
+Figure 4. UK % of road traffic fatalities by light condition, year, and
+type, UK 2011-2020
 
 # Next steps
 
