@@ -7,18 +7,30 @@ between the US and the UK
 The number of pedestrian fatalities in the United States has risen
 steadily since 2009 (Sanders, Schneider, and Proulx 2022; Ferenchak,
 Gutierrez, and Singleton 2022; Wang and Cicchino 2020). A key risk
-factor in these pedestrian deaths appears to be darkness. Despite less
+factor in these pedestrian deaths is darkness (Ferenchak, Gutierrez, and
+Singleton 2022; Sanders, Schneider, and Proulx 2022). Despite less
 pedestrian flow at night, three-quarters of pedestrian fatalities in the
 US occur in the dark. Also, the rate of pedestrian deaths in the dark in
-the US is increasing (Sanders, Schneider, and Proulx 2022). Is the
-increase in pedestrian fatalities and in the dark a trend unique to the
-US or is it also happening in other Western countries like the United
-Kingdom?
+the US is increasing.
 
-Using road safety data and travel data from the US and the UK, this
-study aims to estimate and compare the trends of the risk of travelling
-in the dark by modes of transport (pedestrians, cyclists, and other road
-users) between the US and the UK.
+<!-- Speed limits, number of lanes, roadway type, and presence of traffic control were found significantly associated with the likelihood of a pedestrian fatality occurring in darkness as compared to daylight. Alcohol usage by drivers or pedestrians and sociodemographic characteristics were also positively associated with fatal injuries in darkness [@sanders_pedestrian_2022]. -->
+
+Several questions arise:
+
+- What happens to other vulnerable road users such as cyclists? Is the
+  number of fatality cyclists increasing as much as the number of
+  pedestrians? And how does the darkness influence fatality in cyclists?
+
+- Is the increase in pedestrian fatalities and in darkness a trend
+  unique to the US or is it also happening in other Western countries
+  like the United Kingdom?
+
+Using road safety data and travel data from the US and UK, this study
+estimates and compares trends in the risk of travelling in the dark by
+modes of transport (pedestrians, cyclists, and other road users) between
+the US and the UK.
+
+<!-- The study also examines correlates that explain the higher fatality rate at night in the UK. -->
 
 # Data and method
 
@@ -33,7 +45,8 @@ users) between the US and the UK.
 #### Travel data
 
 - US National Household Travel Survey – Federal Highway Administration
-- UK National Travel Survey – Department for Transport
+  (FHWA)
+- UK National Travel Survey – DfT
 
 ## Method
 
