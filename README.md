@@ -17,8 +17,7 @@ the US is increasing.
 
 Several questions arise:
 
-- What happens to other vulnerable road users such as cyclists? Is the
-  number of fatality cyclists increasing as much as the number of
+- Is the number of fatality cyclists increasing as much as the number of
   pedestrians? And how does the darkness influence fatality in cyclists?
 
 - Is the increase in pedestrian fatalities and darkness a trend unique
