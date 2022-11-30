@@ -21,9 +21,9 @@ Several questions arise:
   number of fatality cyclists increasing as much as the number of
   pedestrians? And how does the darkness influence fatality in cyclists?
 
-- Is the increase in pedestrian fatalities and in darkness a trend
-  unique to the US or is it also happening in other Western countries
-  like the United Kingdom?
+- Is the increase in pedestrian fatalities and darkness a trend unique
+  to the US or is it also happening in other Western countries like the
+  United Kingdom?
 
 Using road safety data and travel data from the US and UK, this study
 estimates and compares trends in the risk of travelling in the dark by
