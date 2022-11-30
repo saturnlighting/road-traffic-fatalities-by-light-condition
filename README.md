@@ -11,12 +11,14 @@ factor in these pedestrian deaths appears to be darkness. Despite less
 pedestrian flow at night, three-quarters of pedestrian fatalities in the
 US occur in the dark. Also, the rate of pedestrian deaths in the dark in
 the US is increasing (Sanders, Schneider, and Proulx 2022). Is the
-increase in pedestrian and dark deaths a trend unique to the US or is it
-also happening in other Western countries like the United Kingdom?
+increase in pedestrian fatalities and in the dark a trend unique to the
+US or is it also happening in other Western countries like the United
+Kingdom?
 
-Using road safety data and travel data, this study aims to calculate and
-compare between the US and the UK the risk of travelling in the dark by
-modes of transport: pedestrians, cyclists, and other road users.
+Using road safety data and travel data from the US and the UK, this
+study aims to estimate and compare the trends of the risk of travelling
+in the dark by modes of transport (pedestrians, cyclists, and other road
+users) between the US and the UK.
 
 # Data and method
 
@@ -24,7 +26,7 @@ modes of transport: pedestrians, cyclists, and other road users.
 
 #### Road safety data
 
-- US Fatality Analysis Reporting System (FARS) data - National Highway
+- US Fatality Analysis Reporting System (FARS) data – National Highway
   Traffic Safety Administration (NHTSA)
 - UK Road Safety Data (STATS19) – Department for Transport (DfT)
 
@@ -35,7 +37,7 @@ modes of transport: pedestrians, cyclists, and other road users.
 
 ## Method
 
-$$ \text{risk ratio (dark)} = \text{num. fatalities (dark)}/\text{km travelled (dark)}$$
+$$ \text{Risk ratio (dark)} = \text{num. fatalities (dark)}/\text{Bkm travelled (dark)}$$
 
 # Results
 
