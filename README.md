@@ -113,11 +113,17 @@ Table 2. Road traffic fatalities by light conditions and type, UK
 | Others      | Dark             | Darkness - no lighting      | 2450 | 20.34 |
 | Others      | Dark             | Darkness - lighting unknown |  199 |  1.65 |
 
-![](README_files/figure-gfm/fig3-1.png)<!-- -->
+    ## `summarise()` has grouped output by 'YEAR'. You can override using the
+    ## `.groups` argument.
+
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 Figure 3. Road traffic fatalities by year and type, UK 2011-2020
 
-![](README_files/figure-gfm/fig4-1.png)<!-- -->
+    ## `summarise()` has grouped output by 'YEAR', 'Type'. You can override using the
+    ## `.groups` argument.
+
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 Figure 4. UK % of road traffic fatalities by light conditions, year, and
 type, UK 2011-2020

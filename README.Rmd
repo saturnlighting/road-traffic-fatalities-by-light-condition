@@ -93,97 +93,215 @@ table(nhts17_tripub$TRPTRANS) # 01 walk, 02 bicycle, 03 Car, 04 SUV
 
 ### US 2011-2020 (FARS data)
 
-```{r eval=FALSE, include=FALSE}
+```{r include=FALSE}
 # get data from https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars
 
-# crashapi package should work now with the following code
-# data20_pkg <- crashapi::get_fars_zip(year = 2020, format = "csv")
-# acc20_pkg <- data20_pkg[["accident"]]
+year_range <- c(2011:2020)
 
-acc20 <- read.csv("data/FARS/FARS2020NationalCSV/accident.CSV")
-acc19 <- read.csv("data/FARS/FARS2019NationalCSV/accident.CSV")
-acc18 <- read.csv("data/FARS/FARS2018NationalCSV/accident.csv")
-acc17 <- read.csv("data/FARS/FARS2017NationalCSV/accident.CSV")
-acc16 <- read.csv("data/FARS/FARS2016NationalCSV/accident.CSV")
-acc15 <- read.csv("data/FARS/FARS2015NationalCSV/accident.csv")
-acc14 <- read.csv("data/FARS/FARS2014NationalCSV/ACCIDENT.csv")
-acc13 <- read.csv("data/FARS/FARS2013NationalCSV/ACCIDENT.csv")
-acc12 <- read.csv("data/FARS/FARS2012NationalCSV/ACCIDENT.csv")
-acc11 <- read.csv("data/FARS/FARS2011NationalCSV/ACCIDENT.CSV")
+# Download ZIP files with FARS data
+purrr::walk(
+  year_range,
+  function(x) {
+    crashapi::get_fars_zip(
+      year = x, format = "csv",
+      path = here::here("data"), read = FALSE
+    )
+    
+    # Download unzip data files (each year in a different folder)
+    unzip(here::here("data", glue::glue("FARS{x}NationalCSV.zip")),
+          exdir = glue::glue("data/FARS{x}")
+    )
+  }
+)
 
-acc11_14 <- rbind(acc11, acc12, acc13, acc14)
-acc11_15 <- merge(acc11_14, acc15, all=TRUE)
-acc16_19 <- rbind(acc16, acc17, acc18, acc19)
-acc11_19 <- merge(acc11_15, acc16_19, all=TRUE)
-acc11_20 <- merge(acc20, acc11_19, all=TRUE)
 
-acc16_19 <- rbind(acc16, acc17, acc18, acc19)
-acc16_20 <- merge(acc20, acc16_19, all=TRUE)
+fars <- 
+  purrr::map_dfr(
+  year_range,
+  function(x) {
+    path <- paste0("data/FARS", x)
 
-accAux20 <- read.csv("data/FARS/FARS2020NationalAuxiliaryCSV/ACC_AUX.CSV")
-perAux20 <- read.csv("data/FARS/FARS2020NationalAuxiliaryCSV/PER_AUX.CSV")
-peracc20 <- left_join(perAux20, accAux20)
+    file <-
+      fs::dir_ls(
+        path = paste0("data/FARS", x),
+        regexp = "accident|ACCIDENT"
+      )
 
-accAux19 <- read.csv("data/FARS/FARS2019NationalAuxiliaryCSV/ACC_AUX.CSV")
-perAux19 <- read.csv("data/FARS/FARS2019NationalAuxiliaryCSV/PER_AUX.CSV")
-peracc19 <- left_join(perAux19, accAux19)
+    readr::read_csv(file) |>
+      dplyr::select(
+        dplyr::any_of(
+          c("ST_CASE", "COUNTY", "STATE", "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "HARM_EV", "LGT_COND")
+        )
+      )
+  }
+)
 
-accAux18 <- read.csv("data/FARS/FARS2018NationalAuxiliaryCSV/ACC_AUX.CSV")
-perAux18 <- read.csv("data/FARS/FARS2018NationalAuxiliaryCSV/PER_AUX.CSV")
-peracc18 <- left_join(perAux18, accAux18)
+purrr::walk(
+  year_range,
+  function(x) {
+    # Download auxiliary ZIP files with FARS data
+    crashapi::get_fars_zip(
+      year = x, format = "csv",
+      aux = TRUE,
+      path = here::here("data"), read = FALSE
+    )
 
-accAux17 <- read.csv("data/FARS/FARS2017NationalAuxiliaryCSV/ACC_AUX.CSV")
-perAux17 <- read.csv("data/FARS/FARS2017NationalAuxiliaryCSV/PER_AUX.CSV")
-peracc17 <- left_join(perAux17, accAux17)
+    # Unzip the data
+    unzip(here::here("data", glue::glue("FARS{x}NationalAuxiliaryCSV.zip")),
+      exdir = here::here(glue::glue("data/FARS{x}_Aux"))
+    )
+  }
+)
 
-accAux16 <- read.csv("data/FARS/FARS2016NationalAuxiliaryCSV/ACC_AUX.CSV")
-perAux16 <- read.csv("data/FARS/FARS2016NationalAuxiliaryCSV/PER_AUX.CSV")
-peracc16 <- left_join(perAux16, accAux16)
+fars_aux <- purrr::map_dfr(
+  year_range,
+  function(x) {
+    # Read and join the auxiliary crash and person files
+    dplyr::left_join(
+      readr::read_csv(here::here("data", paste0("FARS", x, "_Aux"), "ACC_AUX.CSV")),
+      readr::read_csv(here::here("data", paste0("FARS", x, "_Aux"), "PER_AUX.CSV"))
+    )
+  }
+)
 
-accAux15 <- read.csv("data/FARS/FARS2015NationalAuxiliaryCSV/ACC_AUX.CSV")
-perAux15 <- read.csv("data/FARS/FARS2015NationalAuxiliaryCSV/PER_AUX.CSV")
-peracc15 <- left_join(perAux15, accAux15)
+fars_combined <-
+  dplyr::left_join(
+    fars,
+    fars_aux
+  )
 
-accAux14 <- read.csv("data/FARS/FARS2014NationalAuxiliaryCSV/ACC_AUX.CSV")
-perAux14 <- read.csv("data/FARS/FARS2014NationalAuxiliaryCSV/PER_AUX.CSV")
-peracc14 <- left_join(perAux14, accAux14)
+readr::write_csv(fars_combined, here::here("output", "fars.csv"))
+```
 
-accAux13 <- read.csv("data/FARS/FARS2013NationalAuxiliaryCSV/ACC_AUX.CSV")
-perAux13 <- read.csv("data/FARS/FARS2013NationalAuxiliaryCSV/PER_AUX.CSV")
-peracc13 <- left_join(perAux13, accAux13)
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+library(dplyr)
+library(ggplot2)
 
-accAux12 <- read.csv("data/FARS/FARS2012NationalAuxiliaryCSV/ACC_AUX.CSV")
-perAux12 <- read.csv("data/FARS/FARS2012NationalAuxiliaryCSV/PER_AUX.CSV")
-peracc12 <- left_join(perAux12, accAux12)
 
-accAux11 <- read.csv("data/FARS/FARS2011NationalAuxiliaryCSV/ACC_AUX.CSV")
-perAux11 <- read.csv("data/FARS/FARS2011NationalAuxiliaryCSV/PER_AUX.CSV")
-peracc11 <- left_join(perAux11, accAux11)
+fips <- crashapi:::fips_state_table |> 
+  transmute(
+    STATE = as.integer(fips),
+    state_name = stringr::str_to_title(name)
+  )
 
-# accAux16_20 <- rbind(accAux16, accAux17, accAux18, accAux19, accAux20)
-# peracc16_20 <- rbind(peracc16, peracc17, peracc18, peracc19, peracc20)
+fars <- readr::read_csv(here::here("output", "fars.csv"))
 
-accAux11_20 <- rbind(accAux11, accAux12, accAux13, accAux14, accAux15, accAux16, accAux17, accAux18, accAux19, accAux20)
-peracc11_20 <- rbind(peracc11, peracc12, peracc13, peracc14, peracc15, peracc16, peracc17, peracc18, peracc19, peracc20)
+fars_select <- fars |> 
+  select(
+    STATE, YEAR, LGT_COND, A_PERINJ, A_PTYPE
+  ) |> 
+  mutate(
+    light_condition = case_when(
+      LGT_COND == 1 ~ "Daylight",
+      LGT_COND == 2 ~ "Dark – Not Lighted",
+      LGT_COND == 3 ~ "Dark – Lighted",
+      LGT_COND == 4 ~ "Dawn",
+      LGT_COND == 5 ~ "Dusk",
+      LGT_COND == 6 ~ "Dark – Unknown Lighting",
+      LGT_COND == 7 ~ "Other",
+      LGT_COND == 8 ~ "Not Reported",
+      LGT_COND == 9 ~ "Unknown"
+    ),
+    person_type = case_when(
+      A_PTYPE == 1 ~ "Driver",
+      A_PTYPE == 2 ~ "Occupant",
+      A_PTYPE == 3 ~ "Pedestrian",
+      A_PTYPE == 4 ~ "Pedalcyclist",
+      A_PTYPE == 5 ~ "Other/Unknown Non-Occupants"
+  ),
+  injury_type = case_when(
+    A_PERINJ == 1 ~ "Fatal",
+    A_PERINJ == 6 ~ "Survivor in Fatal Crash"
+  ),
+  YEAR = as.Date(paste0(YEAR, "-01-01"))
+  ) |> 
+  left_join(fips) |> 
+  janitor::clean_names()
+  
 
-# acc16_20_short <- acc16_20 %>% 
-#   select("LGT_COND", "LGT_CONDNAME", "STATE", "ST_CASE", "COUNTY", "YEAR")
+fatal_light_condition <- fars_select |> 
+  filter(
+    injury_type == "Fatal",
+    !(light_condition %in% c("Unknown", "Not Reported"))
+  ) |> 
+  mutate(
+    light_condition = forcats::fct_collapse(
+      light_condition,
+      "Light" = "Daylight",
+      "Dark" = c("Dark – Not Lighted", "Dark – Lighted", "Dark – Unknown Lighting"),
+      "Other" = c("Dawn", "Dusk", "Other")
+    )
+  )
 
-acc11_20_short <- acc11_20 %>% 
-  select("LGT_COND", "LGT_CONDNAME", "STATE", "ST_CASE", "COUNTY", "YEAR")
+fatal_light_condition_state_pct <- fatal_light_condition |> 
+  count(year, state_name, person_type, light_condition, name = "count") |> 
+  left_join(count(fatal_light_condition, year, state_name, person_type, name = "type_count")) |> 
+  mutate(
+    pct_count = count / type_count
+  )
 
-# peracc16_20_lc <- left_join(peracc16_20, acc16_20_short)
+fatal_light_condition_state_pct |> 
+  filter(
+    light_condition == "Dark"#,
+    # state_name == "California"
+  ) |> 
+  ggplot(aes(year, pct_count, color = person_type)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth() +
+  facet_wrap(~ person_type) +
+  guides(color = "none") +
+  cols4all::scale_color_discrete_c4a_cat(palette = "tol.vibrant") +
+  labs(
+    title = "Share of fatal crashes for each state in dark light conditions by person type"
+  )
 
-peracc11_20_lc <- left_join(peracc11_20, acc11_20_short)
+fatal_light_condition_pct <- fatal_light_condition |> 
+  count(year, person_type, light_condition, name = "count") |> 
+  left_join(count(fatal_light_condition, year, person_type, name = "type_count")) |> 
+  mutate(
+    pct_count = count / type_count
+  )
 
-# peracc16_20_lc %>%
-#   write_csv("data/FARS/NHTSA_peracc16_20.csv")
+labs_x_yr <- function(...) {
+  list(
+    scale_x_date(),
+    ggplot2::labs(
+      ...,
+      x = "Year",
+      caption = "Source: NHTSA FARS, 2011-2020"
+    )
+  )
+}
 
-peracc11_20_lc %>%
-  write_csv("data/FARS/NHTSA_peracc11_20.csv")
+fatal_light_condition_pct |> 
+  filter(
+    light_condition == "Dark"
+    ) |> 
+  ggplot(aes(year, pct_count, color = person_type)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth() +
+  facet_wrap(~ person_type) +
+  guides(color = "none") +
+  cols4all::scale_color_discrete_c4a_cat(palette = "tol.vibrant") +
+  scale_y_continuous(labels = scales::label_percent()) +
+  labs_x_yr(
+    y = "% of fatal crashes in dark light conditions",
+    color = "Person type"
+  )
 
-# piggyback::pb_release_create(tag = "1")
-# piggyback::pb_upload("NHTSA_data/NHTSA_pbperacc16_20.csv", tag = "1")
+fars_select |> 
+  count(year, person_type) |> 
+  ggplot(aes(year, n, color = person_type)) +
+  ggshadow::geom_shadowline(size = 1.25) +
+  ggshadow::geom_shadowpoint(size = 1.75) +
+  cols4all::scale_color_discrete_c4a_cat(palette = "tol.vibrant") +
+  scale_y_log10() +
+  facet_wrap(~ person_type) +
+  theme_light() +
+  labs_x_yr(
+    y = "Fatal crashes (#)",
+    color = "Person type"
+  )
 ```
 
 Table 1. Road traffic fatalities by light conditions and type, US 2011-2020
@@ -216,6 +334,7 @@ kable(data_table, format = "pipe")%>%
   pack_rows("", 7, 12) %>%
   pack_rows("", 13, 18)
 ```
+
 
 ```{r fig1, echo=FALSE, message=FALSE, warning=FALSE}
 pal <- c("#EBCC2A", "#78B7C5")
@@ -371,7 +490,7 @@ kable(data_table, format = "pipe") %>%
   pack_rows("", 11, 15)
 ```
 
-```{r fig3, echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=FALSE}
 data_plots <- cva11_20%>% 
   select(casualty_type, YEAR = accident_year, casualty_severity) %>% 
   mutate(Type = ifelse(casualty_type == "Pedestrian", "Pedestrians", ifelse(casualty_type == "Cyclist", "Cyclists", ifelse(casualty_type == "Horse rider", "Others", "Motorised vehicles occupants")))) %>%
@@ -419,7 +538,7 @@ ggarrange(p1_uk, p2_uk, p3_uk,
 
 Figure 3. Road traffic fatalities by year and type, UK 2011-2020
 
-```{r fig4, echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=FALSE}
 data_plots <- cva11_20%>% 
   select(casualty_type, YEAR = accident_year, casualty_severity, `Light conditions in detail` = light_conditions) %>% 
   mutate(`Light conditions` = ifelse(`Light conditions in detail` == "Darkness - lights lit" | `Light conditions in detail` == "Darkness - lights unlit" | `Light conditions in detail` == "Darkness - no lighting" | `Light conditions in detail` == "Darkness - lighting unknown", "Dark", ifelse(`Light conditions in detail` == "Data missing or out of range", "NA", "Daylight"))) %>%
